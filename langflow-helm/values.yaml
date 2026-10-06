@@ -1,0 +1,18 @@
+replicaCount: 1
+
+image:
+  repository: langflowai/langflow
+  tag: latest
+  pullPolicy: IfNotPresent
+
+service:
+  type: ClusterIP
+  port: 7860
+
+database:
+  host: postgresql
+  port: 5432
+  name: langflow
+  user: langflow
+  passwordSecret: postgresql-secret
+  passwordKey: password

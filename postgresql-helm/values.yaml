@@ -1,0 +1,27 @@
+replicaCount: 1
+
+fullnameOverride: postgresql
+
+image:
+  repository: postgres
+  tag: "16"
+  pullPolicy: IfNotPresent
+
+service:
+  type: ClusterIP
+  port: 5432
+
+auth:
+  username: langflow
+  password: langflow-password
+  database: langflow
+  secretName: postgresql-secret
+  secretKey: password
+
+persistence:
+  enabled: true
+  storageClass: ""
+  accessModes:
+    - ReadWriteOnce
+  size: 8Gi
+  mountPath: /var/lib/postgresql/data

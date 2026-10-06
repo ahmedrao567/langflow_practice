@@ -1,0 +1,81 @@
+
+apiVersion: apps/v1
+kind: Deployment
+
+metadata:
+  name: langflow
+  labels:
+    app: langflow
+
+spec:
+  replicas: {{ .Values.replicaCount }}
+
+  selector:
+    matchLabels:
+      app: langflow
+
+  template:
+    metadata:
+      labels:
+        app: langflow
+
+    spec:
+      containers:
+        - name: langflow
+
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+
+          command:
+            - langflow
+
+          args:
+            - run
+            - --host
+            - 0.0.0.0
+            - --port
+            - "7860"
+
+          ports:
+            - name: http
+              containerPort: {{ .Values.service.port }}
+              protocol: TCP
+
+          env:
+            - name: LANGFLOW_PORT
+              value: "7860"
+
+            - name: LANGFLOW_HOST
+              value: "0.0.0.0"
+
+            - name: LANGFLOW_CONFIG_DIR
+              value: "/app/langflow"
+
+            - name: LANGFLOW_SUPERUSER
+              value: "admin"
+
+            - name: LANGFLOW_SUPERUSER_PASSWORD
+              value: "admin123"
+
+            - name: DATABASE_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.database.passwordSecret | quote }}
+                  key: {{ .Values.database.passwordKey | quote }}
+
+            - name: LANGFLOW_DATABASE_URL
+              value: "postgresql://{{ .Values.database.user }}:$(DATABASE_PASSWORD)@{{ .Values.database.host }}:{{ .Values.database.port }}/{{ .Values.database.name }}"
+
+          readinessProbe:
+            tcpSocket:
+              port: http
+            initialDelaySeconds: 10
+            periodSeconds: 10
+
+          livenessProbe:
+            tcpSocket:
+              port: http
+            initialDelaySeconds: 30
+            periodSeconds: 20
+
